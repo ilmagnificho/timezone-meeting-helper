@@ -17,7 +17,10 @@ const i18n = {
     hintText:
       "Type in either side (date & time), and the other side updates instantly with correct timezone conversion.",
     footerText:
-      "Made for frequent international meetings. Built by you, powered by the browser."
+      "Made for frequent international meetings. Built by you, powered by the browser.",
+    dstOnShort: "DST",
+    dstOffShort: "Standard",
+    diffLabel: "Time difference (My − Partner)"
   },
   ko: {
     title: "해외 미팅 시차 계산기",
@@ -32,7 +35,10 @@ const i18n = {
     hintText:
       "양쪽 중 편한 쪽에 날짜와 시간을 입력하면, 다른 쪽이 자동으로 시차를 반영해 변환됩니다.",
     footerText:
-      "해외 미팅이 잦은 사용자를 위해 만든 간단한 시차 계산 도구입니다."
+      "해외 미팅이 잦은 사용자를 위해 만든 간단한 시차 계산 도구입니다.",
+    dstOnShort: "서머타임",
+    dstOffShort: "표준시",
+    diffLabel: "시간 차이 (내 시간 − 상대 시간)"
   },
   ja: {
     title: "ミーティング時差コンバーター",
@@ -47,7 +53,10 @@ const i18n = {
     hintText:
       "どちらか一方の日付と時刻を入力すると、もう一方が自動的に時差を考慮して更新されます。",
     footerText:
-      "海外とのミーティングが多い方向けに作られた、シンプルな時差計算ツールです。"
+      "海外とのミーティングが多い方向けに作られた、シンプルな時差計算ツールです。",
+    dstOnShort: "サマータイム",
+    dstOffShort: "標準時",
+    diffLabel: "時間差（自分 − 相手）"
   },
   zh: {
     title: "会议时差转换工具",
@@ -62,7 +71,10 @@ const i18n = {
     hintText:
       "在任意一侧输入日期和时间，另一侧会自动根据时差实时更新。",
     footerText:
-      "为经常开跨国会议的用户打造的简洁时差计算工具。"
+      "为经常开跨国会议的用户打造的简洁时差计算工具。",
+    dstOnShort: "夏令时",
+    dstOffShort: "标准时",
+    diffLabel: "时差（我 − 对方）"
   }
 };
 
@@ -101,7 +113,10 @@ const els = {
   myTime: document.getElementById("my-time"),
   partnerDate: document.getElementById("partner-date"),
   partnerTime: document.getElementById("partner-time"),
-  swapBtn: document.getElementById("swap-btn")
+  swapBtn: document.getElementById("swap-btn"),
+  myOffset: document.getElementById("my-offset"),
+  partnerOffset: document.getElementById("partner-offset"),
+  timeDiff: document.getElementById("time-diff")
 };
 
 let lastEdited = "my"; // "my" or "partner"
@@ -167,6 +182,8 @@ function initLanguage() {
 
   els.languageSelect.addEventListener("change", () => {
     applyLanguage(els.languageSelect.value);
+    // 언어 변경 시 현재 선택된 날짜/시간 기준으로 표시도 업데이트
+    convert(lastEdited);
   });
 }
 
@@ -219,15 +236,68 @@ function updateTargetFields(source, converted) {
   targetTimeEl.value = converted.toFormat("HH:mm");
 }
 
+// UTC 오프셋 및 DST/시간차 표시 업데이트
+function updateMetaInfo(myDt, partnerDt) {
+  if (!els.myOffset || !els.partnerOffset || !els.timeDiff) return;
+
+  const lang = document.documentElement.lang || "en";
+  const dict = i18n[lang] || i18n.en;
+
+  function formatOffset(dt) {
+    const offsetMinutes = dt.offset; // minutes from UTC
+    const sign = offsetMinutes >= 0 ? "+" : "-";
+    const abs = Math.abs(offsetMinutes);
+    const hours = Math.floor(abs / 60);
+    const minutes = abs % 60;
+
+    let base = "UTC" + sign + String(hours).padStart(2, "0");
+    if (minutes !== 0) {
+      base += ":" + String(minutes).padStart(2, "0");
+    }
+
+    const dstText = dt.isInDST ? dict.dstOnShort : dict.dstOffShort;
+    return base + " • " + dstText;
+  }
+
+  // 각 패널 아래 UTC & DST 텍스트
+  els.myOffset.textContent = formatOffset(myDt);
+  els.partnerOffset.textContent = formatOffset(partnerDt);
+
+  // 시간 차이 (내 시간 − 상대 시간) 기준
+  const diffMinutes = myDt.offset - partnerDt.offset;
+  const absDiff = Math.abs(diffMinutes);
+  const hoursDiff = Math.floor(absDiff / 60);
+  const minutesDiff = absDiff % 60;
+  const sign = diffMinutes >= 0 ? "+" : "-";
+
+  let diffText = "Δ " + sign + String(hoursDiff) + "h";
+  if (minutesDiff !== 0) {
+    diffText += " " + String(minutesDiff) + "m";
+  }
+
+  els.timeDiff.textContent = dict.diffLabel + ": " + diffText;
+}
+
 function convert(source) {
   if (suspendEvents) return;
   const payload = readInputs(source);
   if (!payload) return;
-  const { converted } = payload;
+  const { dt, converted } = payload;
 
   suspendEvents = true;
   updateTargetFields(source, converted);
   suspendEvents = false;
+
+  // 동일한 순간의 두 지역 시각 기준으로 메타 정보 업데이트
+  let myDt, partnerDt;
+  if (source === "my") {
+    myDt = dt;
+    partnerDt = converted;
+  } else {
+    myDt = converted;
+    partnerDt = dt;
+  }
+  updateMetaInfo(myDt, partnerDt);
 }
 
 function attachEvents() {

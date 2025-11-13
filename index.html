@@ -19,7 +19,7 @@
 
   <!-- Google AdSense - replace ca-pub-XXXXXXXXXXXXXXXX with your AdSense client ID -->
   <!--
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+  <script async src="https://pageadserving.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
           crossorigin="anonymous"></script>
   -->
 
@@ -55,6 +55,12 @@
             <label for="my-timezone" data-i18n="timezoneLabel">Timezone / City</label>
             <select id="my-timezone" class="timezone-select"></select>
           </div>
+
+          <!-- UTC 오프셋 & DST 정보 -->
+          <div class="offset-row">
+            <span class="offset-pill" id="my-offset"></span>
+          </div>
+
           <div class="field-inline">
             <div class="field">
               <label for="my-date" data-i18n="dateLabel">Date</label>
@@ -73,6 +79,12 @@
             <label for="partner-timezone" data-i18n="timezoneLabel">Timezone / City</label>
             <select id="partner-timezone" class="timezone-select"></select>
           </div>
+
+          <!-- UTC 오프셋 & DST 정보 -->
+          <div class="offset-row">
+            <span class="offset-pill" id="partner-offset"></span>
+          </div>
+
           <div class="field-inline">
             <div class="field">
               <label for="partner-date" data-i18n="dateLabel">Date</label>
@@ -90,6 +102,11 @@
         <button id="swap-btn" class="primary-btn">
           <span data-i18n="swapButton">Swap My Time &amp; Partner Time</span>
         </button>
+      </section>
+
+      <!-- 시간 차이 표시 영역 -->
+      <section class="diff-bar">
+        <p id="time-diff"></p>
       </section>
 
       <section class="hint">

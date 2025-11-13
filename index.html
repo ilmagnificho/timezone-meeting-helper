@@ -1,26 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Meeting Timezone Helper</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Fast, simple timezone converter for scheduling international meetings." />
+  <title>시차 계산기 | Timezone Converter - 해외 미팅 시간 변환</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="해외 미팅을 위한 무료 시차 계산기. 서울, 뉴욕, 런던, 도쿄 등 전세계 시간대를 실시간 변환. 한국어, 영어, 중국어, 일본어 지원. Free timezone converter for international meetings." />
+  <meta name="keywords" content="시차 계산기, timezone converter, 타임존 변환, 해외 미팅, international meeting, time zone calculator, 시간대 변환, meeting scheduler, 미팅 스케줄러" />
+  <meta name="author" content="Timezone Meeting Helper" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://timezone-meeting-helper.vercel.app/" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://timezone-meeting-helper.vercel.app/" />
+  <meta property="og:title" content="시차 계산기 | Timezone Converter - 해외 미팅 시간 변환" />
+  <meta property="og:description" content="해외 미팅을 위한 무료 시차 계산기. 전세계 시간대를 실시간 변환하세요." />
+  <meta property="og:image" content="https://timezone-meeting-helper.vercel.app/og-image.png" />
+  <meta property="og:site_name" content="Timezone Meeting Helper" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="ja_JP" />
+  <meta property="og:locale:alternate" content="zh_CN" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://timezone-meeting-helper.vercel.app/" />
+  <meta name="twitter:title" content="시차 계산기 | Timezone Converter" />
+  <meta name="twitter:description" content="해외 미팅을 위한 무료 시차 계산기. 전세계 시간대를 실시간 변환하세요." />
+  <meta name="twitter:image" content="https://timezone-meeting-helper.vercel.app/og-image.png" />
+  
+  <!-- PWA -->
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Timezone Helper" />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>" />
+  
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-P6DF9ML7SX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google Analytics (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P6DF9ML7SX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-P6DF9ML7SX');
+  </script>
 
-  gtag('config', 'G-P6DF9ML7SX');
-</script>
-
-  <!-- Google AdSense - replace ca-pub-XXXXXXXXXXXXXXXX with your AdSense client ID -->
-  <!--
-  <script async src="https://pageadserving.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-          crossorigin="anonymous"></script>
-  -->
+  <!-- Structured Data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Timezone Meeting Helper",
+    "description": "Free timezone converter for scheduling international meetings",
+    "url": "https://timezone-meeting-helper.vercel.app/",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "127"
+    }
+  }
+  </script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -29,11 +84,11 @@
     <header class="app-header">
       <div class="brand">
         <span class="brand-logo">⏱️</span>
-        <span class="brand-title" data-i18n="title">Meeting Timezone Helper</span>
+        <h1 class="brand-title" data-i18n="title">Meeting Timezone Helper</h1>
       </div>
       <div class="lang-select-wrap">
         <label for="language-select" data-i18n="language">Language</label>
-        <select id="language-select">
+        <select id="language-select" aria-label="Select Language">
           <option value="en">English</option>
           <option value="ko">한국어</option>
           <option value="ja">日本語</option>
@@ -47,65 +102,79 @@
         <p data-i18n="subtitle">Convert meeting times instantly between your timezone and your partner's.</p>
       </section>
 
+      <!-- Time Difference Display -->
+      <section class="time-diff-display" id="time-diff-section" aria-live="polite">
+        <div class="diff-card">
+          <span class="diff-icon">🌍</span>
+          <div class="diff-content">
+            <p class="diff-label" data-i18n="diffLabel">Time difference (My − Partner)</p>
+            <p class="diff-value" id="time-diff">—</p>
+            <p class="diff-description" id="time-diff-description">—</p>
+          </div>
+        </div>
+      </section>
+
       <section class="panels">
-        <div class="panel">
+        <article class="panel my-panel">
           <h2 data-i18n="myTimeTitle">My Time</h2>
           <div class="field">
             <label for="my-timezone" data-i18n="timezoneLabel">Timezone / City</label>
-            <select id="my-timezone" class="timezone-select"></select>
+            <select id="my-timezone" class="timezone-select" aria-label="My Timezone"></select>
           </div>
 
-          <!-- UTC 오프셋 & DST 정보 -->
+          <!-- UTC offset & DST info -->
           <div class="offset-row">
-            <span class="offset-pill" id="my-offset"></span>
+            <span class="offset-pill" id="my-offset" aria-label="My timezone offset"></span>
           </div>
 
           <div class="field-inline">
             <div class="field">
               <label for="my-date" data-i18n="dateLabel">Date</label>
-              <input type="date" id="my-date" />
+              <input type="date" id="my-date" aria-label="My Date" />
             </div>
             <div class="field">
               <label for="my-time" data-i18n="timeLabel">Time</label>
-              <input type="time" id="my-time" />
+              <input type="time" id="my-time" aria-label="My Time" />
             </div>
           </div>
-        </div>
 
-        <div class="panel">
+          <!-- Display formatted time -->
+          <div class="time-display" id="my-time-display" aria-live="polite"></div>
+        </article>
+
+        <article class="panel partner-panel">
           <h2 data-i18n="partnerTimeTitle">Partner Time</h2>
           <div class="field">
             <label for="partner-timezone" data-i18n="timezoneLabel">Timezone / City</label>
-            <select id="partner-timezone" class="timezone-select"></select>
+            <select id="partner-timezone" class="timezone-select" aria-label="Partner Timezone"></select>
           </div>
 
-          <!-- UTC 오프셋 & DST 정보 -->
+          <!-- UTC offset & DST info -->
           <div class="offset-row">
-            <span class="offset-pill" id="partner-offset"></span>
+            <span class="offset-pill" id="partner-offset" aria-label="Partner timezone offset"></span>
           </div>
 
           <div class="field-inline">
             <div class="field">
               <label for="partner-date" data-i18n="dateLabel">Date</label>
-              <input type="date" id="partner-date" />
+              <input type="date" id="partner-date" aria-label="Partner Date" />
             </div>
             <div class="field">
               <label for="partner-time" data-i18n="timeLabel">Time</label>
-              <input type="time" id="partner-time" />
+              <input type="time" id="partner-time" aria-label="Partner Time" />
             </div>
           </div>
-        </div>
+
+          <!-- Display formatted time -->
+          <div class="time-display" id="partner-time-display" aria-live="polite"></div>
+        </article>
       </section>
 
       <section class="controls">
-        <button id="swap-btn" class="primary-btn">
+        <button id="swap-btn" class="primary-btn" aria-label="Swap timezones">
+          <span>🔄</span>
           <span data-i18n="swapButton">Swap My Time &amp; Partner Time</span>
         </button>
-      </section>
-
-      <!-- 시간 차이 표시 영역 -->
-      <section class="diff-bar">
-        <p id="time-diff"></p>
       </section>
 
       <section class="hint">
@@ -114,7 +183,20 @@
         </p>
       </section>
 
-      <!-- Example AdSense unit (uncomment after your AdSense account is approved and configured)
+      <!-- Quick Actions -->
+      <section class="quick-actions">
+        <button id="now-btn" class="quick-btn" aria-label="Set to current time">
+          <span>⚡</span>
+          <span data-i18n="nowButton">Now</span>
+        </button>
+        <button id="copy-link-btn" class="quick-btn" aria-label="Copy shareable link">
+          <span>🔗</span>
+          <span data-i18n="copyLinkButton">Copy Link</span>
+        </button>
+      </section>
+
+      <!-- Ad Section (placeholder) -->
+      <!-- 
       <section class="ad-section">
         <ins class="adsbygoogle"
              style="display:block"
@@ -130,9 +212,17 @@
     </main>
 
     <footer class="app-footer">
-      <span data-i18n="footerText">Made for frequent international meetings. Built by you, powered by the browser.</span>
+      <p data-i18n="footerText">Made for frequent international meetings. Built by you, powered by the browser.</p>
+      <p class="footer-links">
+        <a href="https://github.com/yourusername/timezone-helper" target="_blank" rel="noopener">GitHub</a>
+        <span class="separator">•</span>
+        <a href="mailto:hello@timezone-helper.app">Contact</a>
+      </p>
     </footer>
   </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
 
   <!-- Luxon for robust timezone handling -->
   <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>

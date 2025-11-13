@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://timezone-meeting-helper.vercel.app/sitemap.xml
+```

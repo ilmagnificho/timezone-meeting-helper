@@ -1,4 +1,4 @@
-// Simple, focused timezone converter for meeting scheduling.
+// Enhanced Meeting Timezone Helper with improved UX and features
 // Uses Luxon (loaded from CDN) for robust timezone & DST handling.
 
 const { DateTime } = luxon;
@@ -20,7 +20,16 @@ const i18n = {
       "Made for frequent international meetings. Built by you, powered by the browser.",
     dstOnShort: "DST",
     dstOffShort: "Standard",
-    diffLabel: "Time difference (My − Partner)"
+    diffLabel: "Time difference",
+    nowButton: "Now",
+    copyLinkButton: "Copy Link",
+    linkCopied: "Link copied to clipboard!",
+    hoursAhead: "hours ahead",
+    hoursBehind: "hours behind",
+    sameTime: "Same timezone",
+    yourTimeIs: "Your time is",
+    when: "when",
+    partnerTimeIs: "partner time is"
   },
   ko: {
     title: "해외 미팅 시차 계산기",
@@ -38,7 +47,16 @@ const i18n = {
       "해외 미팅이 잦은 사용자를 위해 만든 간단한 시차 계산 도구입니다.",
     dstOnShort: "서머타임",
     dstOffShort: "표준시",
-    diffLabel: "시간 차이 (내 시간 − 상대 시간)"
+    diffLabel: "시간 차이",
+    nowButton: "지금",
+    copyLinkButton: "링크 복사",
+    linkCopied: "링크가 복사되었습니다!",
+    hoursAhead: "시간 빠름",
+    hoursBehind: "시간 느림",
+    sameTime: "같은 시간대",
+    yourTimeIs: "내 시간",
+    when: "일 때",
+    partnerTimeIs: "상대방 시간"
   },
   ja: {
     title: "ミーティング時差コンバーター",
@@ -56,7 +74,16 @@ const i18n = {
       "海外とのミーティングが多い方向けに作られた、シンプルな時差計算ツールです。",
     dstOnShort: "サマータイム",
     dstOffShort: "標準時",
-    diffLabel: "時間差（自分 − 相手）"
+    diffLabel: "時間差",
+    nowButton: "今",
+    copyLinkButton: "リンクをコピー",
+    linkCopied: "リンクをコピーしました！",
+    hoursAhead: "時間進んでいます",
+    hoursBehind: "時間遅れています",
+    sameTime: "同じタイムゾーン",
+    yourTimeIs: "自分の時間",
+    when: "の時",
+    partnerTimeIs: "相手の時間"
   },
   zh: {
     title: "会议时差转换工具",
@@ -74,7 +101,16 @@ const i18n = {
       "为经常开跨国会议的用户打造的简洁时差计算工具。",
     dstOnShort: "夏令时",
     dstOffShort: "标准时",
-    diffLabel: "时差（我 − 对方）"
+    diffLabel: "时差",
+    nowButton: "现在",
+    copyLinkButton: "复制链接",
+    linkCopied: "链接已复制！",
+    hoursAhead: "小时快",
+    hoursBehind: "小时慢",
+    sameTime: "相同时区",
+    yourTimeIs: "我的时间",
+    when: "时",
+    partnerTimeIs: "对方时间"
   }
 };
 
@@ -116,7 +152,13 @@ const els = {
   swapBtn: document.getElementById("swap-btn"),
   myOffset: document.getElementById("my-offset"),
   partnerOffset: document.getElementById("partner-offset"),
-  timeDiff: document.getElementById("time-diff")
+  timeDiff: document.getElementById("time-diff"),
+  timeDiffDescription: document.getElementById("time-diff-description"),
+  myTimeDisplay: document.getElementById("my-time-display"),
+  partnerTimeDisplay: document.getElementById("partner-time-display"),
+  nowBtn: document.getElementById("now-btn"),
+  copyLinkBtn: document.getElementById("copy-link-btn"),
+  toast: document.getElementById("toast")
 };
 
 let lastEdited = "my"; // "my" or "partner"
@@ -182,7 +224,6 @@ function initLanguage() {
 
   els.languageSelect.addEventListener("change", () => {
     applyLanguage(els.languageSelect.value);
-    // 언어 변경 시 현재 선택된 날짜/시간 기준으로 표시도 업데이트
     convert(lastEdited);
   });
 }
@@ -236,7 +277,29 @@ function updateTargetFields(source, converted) {
   targetTimeEl.value = converted.toFormat("HH:mm");
 }
 
-// UTC 오프셋 및 DST/시간차 표시 업데이트
+// Update time displays with formatted readable text
+function updateTimeDisplays(myDt, partnerDt) {
+  const lang = document.documentElement.lang || "en";
+  
+  const formatOptions = {
+    ko: { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' },
+    en: { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' },
+    ja: { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' },
+    zh: { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+  };
+
+  const locale = {
+    ko: 'ko-KR',
+    en: 'en-US',
+    ja: 'ja-JP',
+    zh: 'zh-CN'
+  }[lang] || 'en-US';
+
+  els.myTimeDisplay.textContent = myDt.toLocaleString(locale, formatOptions[lang] || formatOptions.en);
+  els.partnerTimeDisplay.textContent = partnerDt.toLocaleString(locale, formatOptions[lang] || formatOptions.en);
+}
+
+// UTC offset, DST, and improved time difference display
 function updateMetaInfo(myDt, partnerDt) {
   if (!els.myOffset || !els.partnerOffset || !els.timeDiff) return;
 
@@ -244,7 +307,7 @@ function updateMetaInfo(myDt, partnerDt) {
   const dict = i18n[lang] || i18n.en;
 
   function formatOffset(dt) {
-    const offsetMinutes = dt.offset; // minutes from UTC
+    const offsetMinutes = dt.offset;
     const sign = offsetMinutes >= 0 ? "+" : "-";
     const abs = Math.abs(offsetMinutes);
     const hours = Math.floor(abs / 60);
@@ -259,23 +322,36 @@ function updateMetaInfo(myDt, partnerDt) {
     return base + " • " + dstText;
   }
 
-  // 각 패널 아래 UTC & DST 텍스트
   els.myOffset.textContent = formatOffset(myDt);
   els.partnerOffset.textContent = formatOffset(partnerDt);
 
-  // 시간 차이 (내 시간 − 상대 시간) 기준
+  // Enhanced time difference display
   const diffMinutes = myDt.offset - partnerDt.offset;
   const absDiff = Math.abs(diffMinutes);
   const hoursDiff = Math.floor(absDiff / 60);
   const minutesDiff = absDiff % 60;
-  const sign = diffMinutes >= 0 ? "+" : "-";
+  
+  let diffText = "";
+  let descriptionText = "";
 
-  let diffText = "Δ " + sign + String(hoursDiff) + "h";
-  if (minutesDiff !== 0) {
-    diffText += " " + String(minutesDiff) + "m";
+  if (diffMinutes === 0) {
+    diffText = dict.sameTime;
+    descriptionText = dict.sameTime;
+  } else {
+    const sign = diffMinutes > 0 ? "+" : "-";
+    diffText = sign + String(hoursDiff) + "h";
+    if (minutesDiff !== 0) {
+      diffText += " " + String(minutesDiff) + "m";
+    }
+
+    // More descriptive explanation
+    const direction = diffMinutes > 0 ? dict.hoursAhead : dict.hoursBehind;
+    const hourText = hoursDiff + (minutesDiff !== 0 ? `.${Math.round(minutesDiff / 60 * 10) / 10}` : "");
+    descriptionText = `${dict.yourTimeIs} ${hourText} ${direction}`;
   }
 
-  els.timeDiff.textContent = dict.diffLabel + ": " + diffText;
+  els.timeDiff.textContent = diffText;
+  els.timeDiffDescription.textContent = descriptionText;
 }
 
 function convert(source) {
@@ -288,7 +364,6 @@ function convert(source) {
   updateTargetFields(source, converted);
   suspendEvents = false;
 
-  // 동일한 순간의 두 지역 시각 기준으로 메타 정보 업데이트
   let myDt, partnerDt;
   if (source === "my") {
     myDt = dt;
@@ -297,7 +372,130 @@ function convert(source) {
     myDt = converted;
     partnerDt = dt;
   }
+  
   updateMetaInfo(myDt, partnerDt);
+  updateTimeDisplays(myDt, partnerDt);
+  
+  // Track conversion in Analytics
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'timezone_conversion', {
+      'from_timezone': myDt.zoneName,
+      'to_timezone': partnerDt.zoneName
+    });
+  }
+}
+
+// Show toast notification
+function showToast(message, type = 'default') {
+  els.toast.textContent = message;
+  els.toast.className = 'toast show';
+  if (type === 'success') {
+    els.toast.classList.add('success');
+  }
+  
+  setTimeout(() => {
+    els.toast.classList.remove('show');
+  }, 3000);
+}
+
+// Set current time
+function setToNow() {
+  const now = DateTime.now();
+  const dateStr = now.toISODate();
+  const timeStr = now.toFormat("HH:mm");
+
+  suspendEvents = true;
+  els.myDate.value = dateStr;
+  els.myTime.value = timeStr;
+  suspendEvents = false;
+
+  lastEdited = "my";
+  convert("my");
+  
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'set_to_now', {
+      'event_category': 'user_interaction'
+    });
+  }
+}
+
+// Copy shareable link to clipboard
+function copyShareLink() {
+  const myTz = els.myTimezone.value;
+  const partnerTz = els.partnerTimezone.value;
+  const myDateTime = `${els.myDate.value}T${els.myTime.value}`;
+  
+  const url = new URL(window.location.href);
+  url.searchParams.set('from', myTz);
+  url.searchParams.set('to', partnerTz);
+  url.searchParams.set('time', myDateTime);
+  
+  const shareUrl = url.toString();
+  
+  // Copy to clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      const dict = i18n[document.documentElement.lang] || i18n.en;
+      showToast(dict.linkCopied, 'success');
+      
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'copy_share_link', {
+          'event_category': 'sharing'
+        });
+      }
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      showToast('Failed to copy link', 'error');
+    });
+  } else {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = shareUrl;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      const dict = i18n[document.documentElement.lang] || i18n.en;
+      showToast(dict.linkCopied, 'success');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+    document.body.removeChild(textArea);
+  }
+}
+
+// Load state from URL parameters
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const from = params.get('from');
+  const to = params.get('to');
+  const time = params.get('time');
+  
+  if (from && to && time) {
+    // Set timezones
+    const fromIndex = timezones.findIndex(tz => tz.zone === from);
+    const toIndex = timezones.findIndex(tz => tz.zone === to);
+    
+    if (fromIndex >= 0) els.myTimezone.selectedIndex = fromIndex;
+    if (toIndex >= 0) els.partnerTimezone.selectedIndex = toIndex;
+    
+    // Set date and time
+    const [dateStr, timeStr] = time.split('T');
+    if (dateStr && timeStr) {
+      els.myDate.value = dateStr;
+      els.myTime.value = timeStr;
+    }
+    
+    convert("my");
+    
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'load_from_shared_link', {
+        'event_category': 'sharing'
+      });
+    }
+  }
 }
 
 function attachEvents() {
@@ -305,6 +503,7 @@ function attachEvents() {
     lastEdited = "my";
     convert("my");
   });
+  
   els.partnerTimezone.addEventListener("change", () => {
     lastEdited = "partner";
     convert("partner");
@@ -315,6 +514,7 @@ function attachEvents() {
     lastEdited = "my";
     convert("my");
   });
+  
   els.myTime.addEventListener("input", () => {
     if (suspendEvents) return;
     lastEdited = "my";
@@ -326,6 +526,7 @@ function attachEvents() {
     lastEdited = "partner";
     convert("partner");
   });
+  
   els.partnerTime.addEventListener("input", () => {
     if (suspendEvents) return;
     lastEdited = "partner";
@@ -350,12 +551,27 @@ function attachEvents() {
 
     lastEdited = "my";
     convert("my");
+    
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'swap_timezones', {
+        'event_category': 'user_interaction'
+      });
+    }
   });
+  
+  // New buttons
+  els.nowBtn.addEventListener("click", setToNow);
+  els.copyLinkBtn.addEventListener("click", copyShareLink);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   populateTimezones();
   initLanguage();
   attachEvents();
-  initializeDateTimeFields();
+  loadFromURL(); // Check for URL parameters first
+  
+  // If no URL parameters, initialize with current time
+  if (!new URLSearchParams(window.location.search).has('time')) {
+    initializeDateTimeFields();
+  }
 });

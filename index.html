@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meeting Timezone Helper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Fast, simple timezone converter for scheduling international meetings." />
+
+  <!-- Google Analytics (GA4) - replace G-XXXXXXXXXX with your Measurement ID -->
+  <!--
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+  -->
+
+  <!-- Google AdSense - replace ca-pub-XXXXXXXXXXXXXXXX with your AdSense client ID -->
+  <!--
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          crossorigin="anonymous"></script>
+  -->
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-logo">⏱️</span>
+        <span class="brand-title" data-i18n="title">Meeting Timezone Helper</span>
+      </div>
+      <div class="lang-select-wrap">
+        <label for="language-select" data-i18n="language">Language</label>
+        <select id="language-select">
+          <option value="en">English</option>
+          <option value="ko">한국어</option>
+          <option value="ja">日本語</option>
+          <option value="zh">中文</option>
+        </select>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <p data-i18n="subtitle">Convert meeting times instantly between your timezone and your partner's.</p>
+      </section>
+
+      <section class="panels">
+        <div class="panel">
+          <h2 data-i18n="myTimeTitle">My Time</h2>
+          <div class="field">
+            <label for="my-timezone" data-i18n="timezoneLabel">Timezone / City</label>
+            <select id="my-timezone" class="timezone-select"></select>
+          </div>
+          <div class="field-inline">
+            <div class="field">
+              <label for="my-date" data-i18n="dateLabel">Date</label>
+              <input type="date" id="my-date" />
+            </div>
+            <div class="field">
+              <label for="my-time" data-i18n="timeLabel">Time</label>
+              <input type="time" id="my-time" />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 data-i18n="partnerTimeTitle">Partner Time</h2>
+          <div class="field">
+            <label for="partner-timezone" data-i18n="timezoneLabel">Timezone / City</label>
+            <select id="partner-timezone" class="timezone-select"></select>
+          </div>
+          <div class="field-inline">
+            <div class="field">
+              <label for="partner-date" data-i18n="dateLabel">Date</label>
+              <input type="date" id="partner-date" />
+            </div>
+            <div class="field">
+              <label for="partner-time" data-i18n="timeLabel">Time</label>
+              <input type="time" id="partner-time" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls">
+        <button id="swap-btn" class="primary-btn">
+          <span data-i18n="swapButton">Swap My Time &amp; Partner Time</span>
+        </button>
+      </section>
+
+      <section class="hint">
+        <p data-i18n="hintText">
+          Type in either side (date &amp; time), and the other side updates instantly with correct timezone conversion.
+        </p>
+      </section>
+
+      <!-- Example AdSense unit (uncomment after your AdSense account is approved and configured)
+      <section class="ad-section">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </section>
+      -->
+    </main>
+
+    <footer class="app-footer">
+      <span data-i18n="footerText">Made for frequent international meetings. Built by you, powered by the browser.</span>
+    </footer>
+  </div>
+
+  <!-- Luxon for robust timezone handling -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
